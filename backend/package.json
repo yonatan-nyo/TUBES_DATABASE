@@ -1,0 +1,26 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:create": "npx prisma migrate dev --name init --create-only",
+    "db:push": "npx prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:fake": "npm run db:push && npm run db:seed"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@faker-js/faker": "^9.7.0",
+    "@prisma/client": "^6.7.0",
+    "prisma": "^6.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.18",
+    "prettier-plugin-prisma": "^5.0.0",
+    "tsx": "^4.19.4"
+  }
+}

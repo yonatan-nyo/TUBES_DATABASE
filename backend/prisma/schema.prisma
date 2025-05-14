@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Kreator {
+  id_kreator        Int                   @id @default(autoincrement())
+  nama              String
+  email             String
+  deskripsi         String?               @db.Text
+  bidang_kreasi     String
+  tanggal_bergabung DateTime
+  konten            Konten[]
+  membershipTiers   MembershipTier[]
+  orders            OrderSpecialContent[]
+}
+
+model Supporter {
+  id_pendukung      Int                   @id @default(autoincrement())
+  nama              String
+  email             String
+  alamat            String?               @db.Text
+  tanggal_bergabung DateTime
+  komentar          Komentar[]
+  langganan         Langganan[]
+  orders            OrderSpecialContent[]
+  pembelian         Pembelian[]
+}
+
+model Konten {
+  id_konten         Int           @id @default(autoincrement())
+  id_kreator        Int
+  jenis             String
+  judul             String
+  deskripsi         String?       @db.Text
+  tanggal_publikasi DateTime
+  kreator           Kreator       @relation(fields: [id_kreator], references: [id_kreator])
+  komentar          Komentar[]
+  gambar            KontenGambar?
+  teks              KontenTeks?
+  video             KontenVideo?
+  audio             KontenAudio?
+  merchandise       Merchandise[]
+  aksesKonten       AksesKonten[]
+}
+
+model MembershipTier {
+  id_kreator      Int
+  nama_membership String
+  deskripsi       String?       @db.Text
+  harga_bulanan   Decimal
+  daftar_manfaat  String?       @db.Text
+  kreator         Kreator       @relation(fields: [id_kreator], references: [id_kreator])
+  langganan       Langganan[]
+  aksesKonten     AksesKonten[]
+
+  @@id([id_kreator, nama_membership])
+}
+
+model Komentar {
+  id_komentar  Int       @id @default(autoincrement())
+  id_konten    Int
+  id_pendukung Int
+  isi          String    @db.Text
+  waktu        DateTime
+  konten       Konten    @relation(fields: [id_konten], references: [id_konten])
+  supporter    Supporter @relation(fields: [id_pendukung], references: [id_pendukung])
+}
+
+model Langganan {
+  id_kreator                  Int
+  nama_membership             String
+  id_pendukung                Int
+  tanggal_pembayaran_terakhir DateTime
+  jumlah                      Decimal
+  mode_pembayaran             String
+  status                      String
+  supporter                   Supporter      @relation(fields: [id_pendukung], references: [id_pendukung])
+  membershipTier              MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership])
+
+  @@id([id_kreator, nama_membership, id_pendukung])
+}
+
+model OrderSpecialContent {
+  id_order             Int            @id @default(autoincrement())
+  id_kreator           Int
+  id_pendukung         Int
+  judul                String
+  deskripsi            String?        @db.Text
+  harga_dasar          Decimal
+  detail_kustom        String?        @db.Text
+  tanggal_batas_revisi DateTime
+  estimasi_pengerjaan  Int
+  status               String
+  tanggal_penyelesaian DateTime?
+  feedback             String?        @db.Text
+  kreator              Kreator        @relation(fields: [id_kreator], references: [id_kreator])
+  supporter            Supporter      @relation(fields: [id_pendukung], references: [id_pendukung])
+  gambar               KontenGambar[]
+}
+
+model KontenGambar {
+  id_konten   Int                 @id
+  id_order    Int
+  imageSource String
+  resolusi    String
+  format      String
+  konten      Konten              @relation(fields: [id_konten], references: [id_konten])
+  order       OrderSpecialContent @relation(fields: [id_order], references: [id_order])
+}
+
+model KontenTeks {
+  id_konten   Int    @id
+  textSource  String @db.Text
+  jumlah_kata Int
+  format      String
+  konten      Konten @relation(fields: [id_konten], references: [id_konten])
+}
+
+model KontenVideo {
+  id_konten   Int    @id
+  videoSource String
+  durasi      Int
+  resolusi    String
+  konten      Konten @relation(fields: [id_konten], references: [id_konten])
+}
+
+model KontenAudio {
+  id_konten   Int    @id
+  audioSource String
+  durasi      Int
+  kualitas    String
+  konten      Konten @relation(fields: [id_konten], references: [id_konten])
+}
+
+model Merchandise {
+  id_merchandise Int         @id @default(autoincrement())
+  nama           String
+  id_konten      Int
+  harga          Decimal
+  stok           Int
+  deskripsi      String?     @db.Text
+  konten         Konten      @relation(fields: [id_konten], references: [id_konten])
+  pembelian      Pembelian[]
+}
+
+model Pembelian {
+  id_merchandise    Int
+  id_pendukung      Int
+  jumlah            Int
+  tanggal_pembelian DateTime
+  metode_pembayaran String
+  total_harga       Decimal
+  merchandise       Merchandise @relation(fields: [id_merchandise], references: [id_merchandise])
+  supporter         Supporter   @relation(fields: [id_pendukung], references: [id_pendukung])
+
+  @@id([id_merchandise, id_pendukung])
+}
+
+model AksesKonten {
+  id_konten       Int
+  id_kreator      Int
+  nama_membership String
+  konten          Konten         @relation(fields: [id_konten], references: [id_konten])
+  membershipTier  MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership])
+
+  @@id([id_konten, id_kreator, nama_membership])
+}
