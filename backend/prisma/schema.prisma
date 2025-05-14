@@ -86,31 +86,33 @@ model Langganan {
 }
 
 model OrderSpecialContent {
-  id_order             Int            @id @default(autoincrement())
+  id_order             Int       @id @default(autoincrement())
   id_kreator           Int
   id_pendukung         Int
   judul                String
-  deskripsi            String?        @db.Text
+  deskripsi            String?   @db.Text
   harga_dasar          Decimal
-  detail_kustom        String?        @db.Text
+  detail_kustom        String?   @db.Text
   tanggal_batas_revisi DateTime
   estimasi_pengerjaan  Int
   status               String
   tanggal_penyelesaian DateTime?
-  feedback             String?        @db.Text
-  kreator              Kreator        @relation(fields: [id_kreator], references: [id_kreator])
-  supporter            Supporter      @relation(fields: [id_pendukung], references: [id_pendukung])
-  gambar               KontenGambar[]
+  feedback             String?   @db.Text
+
+  kreator   Kreator       @relation(fields: [id_kreator], references: [id_kreator])
+  supporter Supporter     @relation(fields: [id_pendukung], references: [id_pendukung])
+  gambar    KontenGambar? @relation("OrderToGambar")
 }
 
 model KontenGambar {
-  id_konten   Int                 @id
-  id_order    Int
+  id_konten   Int    @id
+  id_order    Int?   @unique
   imageSource String
   resolusi    String
   format      String
-  konten      Konten              @relation(fields: [id_konten], references: [id_konten])
-  order       OrderSpecialContent @relation(fields: [id_order], references: [id_order])
+
+  konten Konten               @relation(fields: [id_konten], references: [id_konten])
+  order  OrderSpecialContent? @relation("OrderToGambar", fields: [id_order], references: [id_order])
 }
 
 model KontenTeks {

@@ -33,18 +33,87 @@ async function main() {
   const getRandomKreator = () => kreatorList[Math.floor(Math.random() * kreatorList.length)];
   const getRandomSupporter = () => supporterList[Math.floor(Math.random() * supporterList.length)];
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 50; i++) {
     const kreator = getRandomKreator();
+    const typeContent = faker.helpers.arrayElement(["Video", "Audio", "Teks", "Gambar"]);
 
-    await prisma.konten.create({
+    const orderSpecialContent = await prisma.orderSpecialContent.create({
+      data: {
+        id_kreator: getRandomKreator().id_kreator,
+        id_pendukung: getRandomSupporter().id_pendukung,
+        judul: faker.lorem.words(3),
+        deskripsi: faker.lorem.paragraph(),
+        harga_dasar: parseFloat(faker.commerce.price()),
+        detail_kustom: faker.lorem.sentence(),
+        tanggal_batas_revisi: faker.date.future(),
+        estimasi_pengerjaan: faker.number.int({ min: 1, max: 10 }),
+        status: "Dalam Proses",
+        tanggal_penyelesaian: null,
+        feedback: "",
+      },
+    });
+    const createdKonten = await prisma.konten.create({
       data: {
         id_kreator: kreator.id_kreator,
-        jenis: faker.helpers.arrayElement(["Video", "Audio", "Teks", "Gambar"]),
+        jenis: typeContent,
         judul: faker.lorem.sentence(),
         deskripsi: faker.lorem.paragraph(),
         tanggal_publikasi: faker.date.recent(),
       },
     });
+
+    if (typeContent === "Gambar") {
+      const isFromOrder = Math.random() < 0.5;
+
+      if (isFromOrder) {
+        await prisma.kontenGambar.create({
+          data: {
+            id_konten: createdKonten.id_konten,
+            imageSource: faker.image.url(),
+            resolusi: `${faker.number.int({ min: 720, max: 2160 })}p`,
+            format: faker.helpers.arrayElement(["jpg", "png", "webp"]),
+            id_order: orderSpecialContent.id_order,
+          },
+        });
+      } else {
+        await prisma.kontenGambar.create({
+          data: {
+            id_konten: createdKonten.id_konten,
+            id_order: undefined,
+            imageSource: faker.image.url(),
+            resolusi: `${faker.number.int({ min: 720, max: 2160 })}p`,
+            format: faker.helpers.arrayElement(["jpg", "png", "webp"]),
+          },
+        });
+      }
+    } else if (typeContent === "Teks") {
+      await prisma.kontenTeks.create({
+        data: {
+          id_konten: createdKonten.id_konten,
+          textSource: faker.lorem.paragraphs(3),
+          jumlah_kata: faker.number.int({ min: 100, max: 2000 }),
+          format: faker.helpers.arrayElement(["markdown", "txt", "html"]),
+        },
+      });
+    } else if (typeContent === "Audio") {
+      await prisma.kontenAudio.create({
+        data: {
+          id_konten: createdKonten.id_konten,
+          audioSource: faker.internet.url(),
+          durasi: faker.number.int({ min: 30, max: 600 }), // seconds
+          kualitas: faker.helpers.arrayElement(["128kbps", "256kbps", "320kbps"]),
+        },
+      });
+    } else if (typeContent === "Video") {
+      await prisma.kontenVideo.create({
+        data: {
+          id_konten: createdKonten.id_konten,
+          videoSource: faker.internet.url(),
+          durasi: faker.number.int({ min: 60, max: 3600 }),
+          resolusi: faker.helpers.arrayElement(["720p", "1080p", "4K"]),
+        },
+      });
+    }
 
     await prisma.membershipTier.create({
       data: {
@@ -60,7 +129,7 @@ async function main() {
   const kontenList = await prisma.konten.findMany();
   const membershipList = await prisma.membershipTier.findMany();
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 50; i++) {
     const konten = kontenList[Math.floor(Math.random() * kontenList.length)];
     const supporter = getRandomSupporter();
 
@@ -75,7 +144,6 @@ async function main() {
 
     const tier = membershipList[Math.floor(Math.random() * membershipList.length)];
 
-    // ✅ Check for existing langganan first
     const existingLangganan = await prisma.langganan.findUnique({
       where: {
         id_kreator_nama_membership_id_pendukung: {
@@ -99,22 +167,60 @@ async function main() {
         },
       });
     }
+  }
 
-    await prisma.orderSpecialContent.create({
+  const kontenIds = kontenList.map((konten) => konten.id_konten);
+
+  for (let i = 0; i < 30; i++) {
+    const randomKontenId = kontenIds[Math.floor(Math.random() * kontenIds.length)];
+    await prisma.merchandise.create({
       data: {
-        id_kreator: konten.id_kreator,
-        id_pendukung: supporter.id_pendukung,
-        judul: faker.lorem.words(3),
-        deskripsi: faker.lorem.paragraph(),
-        harga_dasar: parseFloat(faker.commerce.price()),
-        detail_kustom: faker.lorem.sentence(),
-        tanggal_batas_revisi: faker.date.future(),
-        estimasi_pengerjaan: faker.number.int({ min: 1, max: 10 }),
-        status: "Dalam Proses",
-        tanggal_penyelesaian: null,
-        feedback: "",
+        nama: faker.commerce.productName(),
+        id_konten: randomKontenId,
+        harga: parseFloat(faker.commerce.price({ min: 50000, max: 500000 })),
+        stok: faker.number.int({ min: 10, max: 100 }),
+        deskripsi: faker.commerce.productDescription(),
       },
     });
+  }
+
+  const merchandiseList = await prisma.merchandise.findMany();
+
+  for (let i = 0; i < 50; i++) {
+    const merchandise = merchandiseList[Math.floor(Math.random() * merchandiseList.length)];
+    const supporter = getRandomSupporter();
+    const quantity = faker.number.int({ min: 1, max: 5 });
+    const totalPrice = Number(merchandise.harga) * quantity;
+
+    await prisma.pembelian.create({
+      data: {
+        id_merchandise: merchandise.id_merchandise,
+        id_pendukung: supporter.id_pendukung,
+        jumlah: quantity,
+        tanggal_pembelian: faker.date.recent(),
+        metode_pembayaran: faker.helpers.arrayElement(["Transfer Bank", "E-Wallet", "Kartu Kredit", "QRIS"]),
+        total_harga: totalPrice,
+      },
+    });
+  }
+
+  for (let i = 0; i < 40; i++) {
+    const konten = kontenList[Math.floor(Math.random() * kontenList.length)];
+    const tier = membershipList[Math.floor(Math.random() * membershipList.length)];
+
+    try {
+      await prisma.aksesKonten.create({
+        data: {
+          id_konten: konten.id_konten,
+          id_kreator: tier.id_kreator,
+          nama_membership: tier.nama_membership,
+        },
+      });
+    } catch (error) {
+      if (!error.message.includes("Unique constraint")) {
+        throw error;
+      }
+    }
   }
 
   console.log("✅ [SEED] Done seeding!");
