@@ -186,23 +186,51 @@ async function main() {
 
   const merchandiseList = await prisma.merchandise.findMany();
 
-  for (let i = 0; i < 50; i++) {
+  // Try to create 50 unique pembelian records
+  const usedPairs = new Set();
+  let successfulCreations = 0;
+  let attempts = 0;
+  const maxAttempts = 1000;
+  while (successfulCreations < 50 && attempts < maxAttempts) {
+    attempts++;
     const merchandise = merchandiseList[Math.floor(Math.random() * merchandiseList.length)];
     const supporter = getRandomSupporter();
-    const quantity = faker.number.int({ min: 1, max: 5 });
-    const totalPrice = Number(merchandise.harga) * quantity;
 
-    await prisma.pembelian.create({
-      data: {
-        id_merchandise: merchandise.id_merchandise,
-        id_pendukung: supporter.id_pendukung,
-        jumlah: quantity,
-        tanggal_pembelian: faker.date.recent(),
-        metode_pembayaran: faker.helpers.arrayElement(["Transfer Bank", "E-Wallet", "Kartu Kredit", "QRIS"]),
-        total_harga: totalPrice,
-      },
-    });
+    // Create a unique key for this combination
+    const pairKey = `${merchandise.id_merchandise}-${supporter.id_pendukung}`;
+
+    // Skip if we've already used this combination
+    if (usedPairs.has(pairKey)) {
+      continue;
+    }
+
+    usedPairs.add(pairKey);
+
+    try {
+      const quantity = faker.number.int({ min: 1, max: 5 });
+      const totalPrice = Number(merchandise.harga) * quantity;
+
+      await prisma.pembelian.create({
+        data: {
+          id_merchandise: merchandise.id_merchandise,
+          id_pendukung: supporter.id_pendukung,
+          jumlah: quantity,
+          tanggal_pembelian: faker.date.recent(),
+          metode_pembayaran: faker.helpers.arrayElement(["Transfer Bank", "E-Wallet", "Kartu Kredit", "QRIS"]),
+          total_harga: totalPrice,
+        },
+      });
+
+      successfulCreations++;
+    } catch (error) {
+      if (!error.message.includes("Unique constraint")) {
+        throw error;
+      }
+      console.warn(`⚠️ [SEED] Duplicate pembelian detected: ${pairKey}`);
+    }
   }
+
+  console.log(`✅ [SEED] Created ${successfulCreations} pembelian records after ${attempts} attempts`);
 
   for (let i = 0; i < 40; i++) {
     const konten = kontenList[Math.floor(Math.random() * kontenList.length)];
