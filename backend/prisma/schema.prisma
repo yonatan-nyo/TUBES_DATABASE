@@ -67,7 +67,7 @@ model Komentar {
   id_pendukung Int
   isi          String    @db.Text
   waktu        DateTime
-  konten       Konten    @relation(fields: [id_konten], references: [id_konten])
+  konten       Konten    @relation(fields: [id_konten], references: [id_konten], onDelete: Cascade)
   supporter    Supporter @relation(fields: [id_pendukung], references: [id_pendukung])
 }
 
@@ -79,8 +79,8 @@ model Langganan {
   jumlah                      Decimal
   mode_pembayaran             String
   status                      String
-  supporter                   Supporter      @relation(fields: [id_pendukung], references: [id_pendukung])
-  membershipTier              MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership])
+  supporter                   Supporter      @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade)
+  membershipTier              MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership], onDelete: Cascade)
 
   @@id([id_kreator, nama_membership, id_pendukung])
 }
@@ -100,7 +100,7 @@ model OrderSpecialContent {
   feedback             String?   @db.Text
 
   kreator   Kreator       @relation(fields: [id_kreator], references: [id_kreator])
-  supporter Supporter     @relation(fields: [id_pendukung], references: [id_pendukung])
+  supporter Supporter     @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade)
   gambar    KontenGambar? @relation("OrderToGambar")
 }
 
@@ -157,8 +157,8 @@ model Pembelian {
   tanggal_pembelian DateTime
   metode_pembayaran String
   total_harga       Decimal
-  merchandise       Merchandise @relation(fields: [id_merchandise], references: [id_merchandise])
-  supporter         Supporter   @relation(fields: [id_pendukung], references: [id_pendukung])
+  merchandise       Merchandise @relation(fields: [id_merchandise], references: [id_merchandise], onDelete: Cascade)
+  supporter         Supporter   @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade)
 
   @@id([id_merchandise, id_pendukung])
 }
@@ -167,8 +167,8 @@ model AksesKonten {
   id_konten       Int
   id_kreator      Int
   nama_membership String
-  konten          Konten         @relation(fields: [id_konten], references: [id_konten])
-  membershipTier  MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership])
+  konten          Konten         @relation(fields: [id_konten], references: [id_konten], onDelete: Cascade)
+  membershipTier  MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership], onDelete: Cascade)
 
   @@id([id_konten, id_kreator, nama_membership])
 }

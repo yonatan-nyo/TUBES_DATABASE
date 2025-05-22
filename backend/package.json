@@ -7,7 +7,8 @@
     "db:create": "npx prisma migrate dev --name init --create-only",
     "db:push": "npx prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:fake": "npm run db:push && npm run db:seed"
+    "db:fake": "npm run db:push && npm run db:seed",
+    "db:migrate": "npx prisma migrate dev"
   },
   "keywords": [],
   "author": "",
