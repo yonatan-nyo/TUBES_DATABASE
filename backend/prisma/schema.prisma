@@ -25,6 +25,7 @@ model Supporter {
   email             String
   alamat            String?               @db.Text
   tanggal_bergabung DateTime
+  aktivitas         AktivitasPendukung[]
   komentar          Komentar[]
   langganan         Langganan[]
   orders            OrderSpecialContent[]
@@ -171,4 +172,22 @@ model AksesKonten {
   membershipTier  MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership], onDelete: Cascade)
 
   @@id([id_konten, id_kreator, nama_membership])
+}
+
+enum JenisAktivitas {
+  Langganan
+  Komentar
+  Beli_Merchandise
+}
+
+model AktivitasPendukung {
+  id_aktivitas      Int            @id @default(autoincrement())
+  id_pendukung      Int
+  jenis_aktivitas   JenisAktivitas
+  id_referensi      Int
+  deskripsi         String         @db.Text
+  tanggal_aktivitas DateTime       @default(now())
+  supporter         Supporter      @relation(fields: [id_pendukung], references: [id_pendukung])
+
+  @@index([id_pendukung])
 }
