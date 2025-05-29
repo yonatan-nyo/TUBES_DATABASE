@@ -223,6 +223,7 @@ async function main() {
 
       successfulCreations++;
     } catch (error) {
+      // @ts-ignore
       if (!error.message.includes("Unique constraint")) {
         throw error;
       }
@@ -245,6 +246,7 @@ async function main() {
         },
       });
     } catch (error) {
+      // @ts-ignore
       if (!error.message.includes("Unique constraint")) {
         throw error;
       }

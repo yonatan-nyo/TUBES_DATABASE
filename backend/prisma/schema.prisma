@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated/prisma-client-js"
+  output   = "prisma-client-js"
 }
 
 datasource db {
@@ -11,7 +11,7 @@ datasource db {
 model Kreator {
   id_kreator        Int                   @id @default(autoincrement())
   nama              String
-  email             String
+  email             String                @unique
   deskripsi         String?               @db.Text
   bidang_kreasi     String
   tanggal_bergabung DateTime
@@ -23,7 +23,7 @@ model Kreator {
 model Supporter {
   id_pendukung      Int                   @id @default(autoincrement())
   nama              String
-  email             String
+  email             String                @unique
   alamat            String?               @db.Text
   tanggal_bergabung DateTime
   aktivitas         AktivitasPendukung[]
@@ -69,7 +69,7 @@ model Komentar {
   id_pendukung Int
   isi          String    @db.Text
   waktu        DateTime
-  konten       Konten    @relation(fields: [id_konten], references: [id_konten], onDelete: Cascade)
+  konten       Konten    @relation(fields: [id_konten], references: [id_konten], onDelete: Cascade, onUpdate: Cascade)
   supporter    Supporter @relation(fields: [id_pendukung], references: [id_pendukung])
 }
 
@@ -80,30 +80,32 @@ model Langganan {
   tanggal_pembayaran_terakhir DateTime
   jumlah                      Decimal
   mode_pembayaran             String
-  status                      String
-  supporter                   Supporter      @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade)
-  membershipTier              MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership], onDelete: Cascade)
+  status                      StatusLangganan
+  supporter                   Supporter       @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade, onUpdate: Cascade)
+  membershipTier              MembershipTier  @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([id_kreator, nama_membership, id_pendukung])
 }
 
 model OrderSpecialContent {
-  id_order             Int       @id @default(autoincrement())
+  id_order             Int         @id @default(autoincrement())
   id_kreator           Int
   id_pendukung         Int
   judul                String
-  deskripsi            String?   @db.Text
+  deskripsi            String?     @db.Text
   harga_dasar          Decimal
-  detail_kustom        String?   @db.Text
+  detail_kustom        String?     @db.Text
   tanggal_batas_revisi DateTime
   estimasi_pengerjaan  Int
-  status               String
+  status               StatusOrder
   tanggal_penyelesaian DateTime?
-  feedback             String?   @db.Text
+  feedback             String?     @db.Text
 
   kreator   Kreator       @relation(fields: [id_kreator], references: [id_kreator])
-  supporter Supporter     @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade)
+  supporter Supporter     @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade, onUpdate: Cascade)
   gambar    KontenGambar? @relation("OrderToGambar")
+
+  @@unique([id_pendukung, judul])
 }
 
 model KontenGambar {
@@ -159,8 +161,8 @@ model Pembelian {
   tanggal_pembelian DateTime
   metode_pembayaran String
   total_harga       Decimal
-  merchandise       Merchandise @relation(fields: [id_merchandise], references: [id_merchandise], onDelete: Cascade)
-  supporter         Supporter   @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade)
+  merchandise       Merchandise @relation(fields: [id_merchandise], references: [id_merchandise], onDelete: Cascade, onUpdate: Cascade)
+  supporter         Supporter   @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([id_merchandise, id_pendukung])
 }
@@ -169,10 +171,22 @@ model AksesKonten {
   id_konten       Int
   id_kreator      Int
   nama_membership String
-  konten          Konten         @relation(fields: [id_konten], references: [id_konten], onDelete: Cascade)
-  membershipTier  MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership], onDelete: Cascade)
+  konten          Konten         @relation(fields: [id_konten], references: [id_konten], onDelete: Cascade, onUpdate: Cascade)
+  membershipTier  MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([id_konten, id_kreator, nama_membership])
+}
+
+enum StatusLangganan {
+  Aktif
+  Pending
+  Expired
+}
+
+enum StatusOrder {
+  Selesai
+  Diproses
+  Menunggu
 }
 
 enum JenisAktivitas {

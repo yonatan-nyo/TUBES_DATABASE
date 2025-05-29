@@ -4,11 +4,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "generate": "npx prisma generate",
     "db:create": "npx prisma migrate dev --name init --create-only",
     "db:push": "npx prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:fake": "npm run db:push && npm run db:seed",
-    "db:migrate": "npx prisma migrate dev"
+    "db:migrate": "npx prisma migrate dev",
+    "db:reset": "npx prisma migrate reset",
+    "migration:create": "prisma migrate dev --create-only",
+    "constrains:combine": "tsx prisma/constraints/combine.ts",
+    "migration:create:all": "rimraf prisma/migrations && npx prisma migrate reset && npm run db:create && npm run constrains:combine && npx prisma migrate dev --create-only --name constraints"
   },
   "keywords": [],
   "author": "",
@@ -20,8 +25,9 @@
     "prisma": "^6.8.2"
   },
   "devDependencies": {
-    "@types/node": "^22.15.18",
+    "@types/node": "^22.15.24",
     "prettier-plugin-prisma": "^5.0.0",
+    "rimraf": "^6.0.1",
     "tsx": "^4.19.4"
   }
 }
