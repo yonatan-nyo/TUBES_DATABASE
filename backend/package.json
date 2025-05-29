@@ -17,7 +17,7 @@
   "dependencies": {
     "@faker-js/faker": "^9.7.0",
     "@prisma/client": "^6.7.0",
-    "prisma": "^6.7.0"
+    "prisma": "^6.8.2"
   },
   "devDependencies": {
     "@types/node": "^22.15.18",
