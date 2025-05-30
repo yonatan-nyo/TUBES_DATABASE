@@ -11,6 +11,8 @@ const relationExtraSqlPath = join(__dirname, "relation_extra.sql");
 const databaseSqlPath = join(__dirname, "database.sql");
 const transitionSqlPath = join(__dirname, "transition.sql");
 const fiturTambahan1SqlPath = join(__dirname, "fitur_tambahan_1.sql");
+const fiturTambahan3SqlPath = join(__dirname, "fitur_tambahan_3.sql");
+const fiturTambahan4SqlPath = join(__dirname, "fitur_tambahan_4.sql");
 
 function findLatestConstraintsMigration(): string | null {
   const migrationsPath = join(__dirname, "../migrations");
@@ -42,8 +44,16 @@ function combineSqlFiles() {
   const databaseSql = readFileSync(databaseSqlPath, "utf8");
   const transitionSql = readFileSync(transitionSqlPath, "utf8");
   const fiturTambahan1Sql = readFileSync(fiturTambahan1SqlPath, "utf8");
+  const fiturTambahan3Sql = readFileSync(fiturTambahan3SqlPath, "utf8");
+  const fiturTambahan4Sql = readFileSync(fiturTambahan4SqlPath, "utf8");
 
-  const combinedSql = `-- Type Constraints\n${typeSql}\n\n-- Relation Extra Sql\n${relationExtraSql}\n\n-- Database Constraints\n${databaseSql}\n\n-- Transition Constraints\n${transitionSql}\n\n-- Fitur Tambahan\n${fiturTambahan1Sql}`;
+  let combinedSql = `-- Type Constraints\n${typeSql}\n\n`;
+  combinedSql += `-- Relation Extra Sql\n${relationExtraSql}\n\n`;
+  combinedSql += `-- Database Constraints\n${databaseSql}\n\n`;
+  combinedSql += `-- Transition Constraints\n${transitionSql}\n\n`;
+  combinedSql += `-- Fitur Tambahan 1\n${fiturTambahan1Sql}\n\n`;
+  combinedSql += `-- Fitur Tambahan 3\n${fiturTambahan3Sql}\n\n`;
+  combinedSql += `-- Fitur Tambahan 4\n${fiturTambahan4Sql}`;
 
   // Find the latest constraints migration folder
   const constraintsMigrationPath = findLatestConstraintsMigration();

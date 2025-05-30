@@ -198,7 +198,7 @@ END;
 -- sql-formatter-enable
 -- prettier-ignore-end
 
--- Fitur Tambahan
+-- Fitur Tambahan 1
 -- prettier-ignore-start
 -- sql-formatter-disable
 CREATE TRIGGER hitung_total_harga_insert 
@@ -229,3 +229,93 @@ END;
 
 -- sql-formatter-enable
 -- prettier-ignore-end
+
+-- Fitur Tambahan 3
+-- 2. Trigger: Log after Langganan inserted
+CREATE TRIGGER after_langganan_insert
+AFTER INSERT ON Langganan
+FOR EACH ROW
+BEGIN
+   INSERT INTO AktivitasPendukung (id_pendukung, jenis_aktivitas, id_referensi, deskripsi, tanggal_aktivitas)
+   VALUES (
+       NEW.id_pendukung,
+       'Langganan',
+       NEW.id_kreator,
+       CONCAT('Berlangganan membership tier "', NEW.nama_membership, '" dari kreator dengan ID: ', NEW.id_kreator),
+       NOW(3)
+   );
+END;
+-- 3. Trigger: Log after Komentar inserted
+CREATE TRIGGER after_komentar_insert
+AFTER INSERT ON Komentar
+FOR EACH ROW
+BEGIN
+   INSERT INTO AktivitasPendukung (id_pendukung, jenis_aktivitas, id_referensi, deskripsi, tanggal_aktivitas)
+   VALUES (
+       NEW.id_pendukung,
+       'Komentar',
+       NEW.id_konten,
+       CONCAT('Memberi komentar pada konten dengan ID: ', NEW.id_konten),
+       NEW.waktu
+   );
+END;
+-- 4. Trigger: Log after PembelianMerchandise inserted
+CREATE TRIGGER after_pembelian_insert
+AFTER INSERT ON Pembelian
+FOR EACH ROW
+BEGIN
+   INSERT INTO AktivitasPendukung (id_pendukung, jenis_aktivitas, id_referensi, deskripsi, tanggal_aktivitas)
+   VALUES (
+       NEW.id_pendukung,
+       'Beli_Merchandise',
+       NEW.id_merchandise,
+       CONCAT('Membeli merchandise dengan ID: ', NEW.id_merchandise),
+       NEW.tanggal_pembelian
+   );
+END;
+
+-- Fitur Tambahan 4
+
+-- Trigger: BEFORE INSERT on Kreator
+CREATE TRIGGER `email_kreator_insert`
+BEFORE INSERT ON `Kreator`
+FOR EACH ROW
+BEGIN
+   IF NEW.email NOT LIKE '_%@%.com' OR NEW.email LIKE '%@%@%.com' THEN
+       SIGNAL SQLSTATE '45000'
+       SET MESSAGE_TEXT = 'Format email untuk Kreator tidak valid. Pastikan formatnya <...>@<...>.com';
+   END IF;
+END;
+
+-- Trigger: BEFORE UPDATE on Kreator
+CREATE TRIGGER `email_kreator_update`
+BEFORE UPDATE ON `Kreator`
+FOR EACH ROW
+BEGIN
+   IF NEW.email NOT LIKE '_%@%.com' OR NEW.email LIKE '%@%@%.com' THEN
+       SIGNAL SQLSTATE '45000'
+       SET MESSAGE_TEXT = 'Format email untuk Kreator tidak valid. Pastikan formatnya <...>@<...>.com';
+   END IF;
+END;
+
+-- Trigger: BEFORE INSERT on Supporter
+CREATE TRIGGER `email_supporter_insert`
+BEFORE INSERT ON `Supporter`
+FOR EACH ROW
+BEGIN
+   IF NEW.email NOT LIKE '_%@%.com' OR NEW.email LIKE '%@%@%.com' THEN
+       SIGNAL SQLSTATE '45000'
+       SET MESSAGE_TEXT = 'Format email untuk Supporter tidak valid. Pastikan formatnya <...>@<...>.com';
+   END IF;
+END;
+
+-- Trigger: BEFORE UPDATE on Supporter
+CREATE TRIGGER `email_supporter_update`
+BEFORE UPDATE ON `Supporter`
+FOR EACH ROW
+BEGIN
+   IF NEW.email NOT LIKE '_%@%.com' OR NEW.email LIKE '%@%@%.com' THEN
+       SIGNAL SQLSTATE '45000'
+       SET MESSAGE_TEXT = 'Format email untuk Supporter tidak valid. Pastikan formatnya <...>@<...>.com';
+   END IF;
+END;
