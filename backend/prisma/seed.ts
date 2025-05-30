@@ -255,6 +255,21 @@ async function main() {
     usedPairs.add(pairKey);
 
     try {
+      const konten = await prisma.konten.findUnique({
+        where: {
+          id_konten: merchandise.id_konten,
+        },
+        select: {
+          tanggal_publikasi: true,
+        },
+      });
+
+      const tanggalPublikasi = konten?.tanggal_publikasi ?? new Date();
+      const tanggalPembelian = faker.date.between({
+        from: new Date(tanggalPublikasi.getTime() + 1000), // 1 detik setelah
+        to: new Date(),
+      });
+
       const quantity = faker.number.int({ min: 1, max: 5 });
       const totalPrice = Number(merchandise.harga) * quantity;
 
@@ -263,7 +278,7 @@ async function main() {
           id_merchandise: merchandise.id_merchandise,
           id_pendukung: supporter.id_pendukung,
           jumlah: quantity,
-          tanggal_pembelian: faker.date.recent(),
+          tanggal_pembelian: tanggalPembelian,
           metode_pembayaran: faker.helpers.arrayElement([
             "Transfer Bank",
             "E-Wallet",
