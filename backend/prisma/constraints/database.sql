@@ -40,5 +40,23 @@ BEGIN
         SET MESSAGE_TEXT = 'Tidak ada langganan aktif untuk membership tier ini';
     END IF;
 END;
+
+-- Trigger untuk validasi jumlah tier maksimal saat INSERT
+CREATE TRIGGER check_max_tier_per_kreator_insert
+BEFORE INSERT ON MembershipTier
+FOR EACH ROW
+BEGIN
+    DECLARE tier_count INT;
+
+    SELECT COUNT(*) INTO tier_count
+    FROM MembershipTier
+    WHERE id_kreator = NEW.id_kreator;
+
+    IF tier_count >= 5 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Maksimal tier untuk satu kreator adalah 5.';
+    END IF;
+END;
+
 -- sql-formatter-enable
 -- prettier-ignore-end
