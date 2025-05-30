@@ -4,13 +4,13 @@ Karena MariaDB tidak mendukung create TYPE, kita akan menggunakan
 CHECK CONSTRAINT untuk memastikan nilai kolom sesuai dengan tipe yang diinginkan.
  */
 ALTER TABLE `Pembelian`
- ADD CONSTRAINT `pembelian_total_harga_valid` CHECK (`total_harga` > 0.0);
+ ADD CONSTRAINT `pembelian_total_harga_valid` CHECK (`total_harga` >= 0.0);
 
 ALTER TABLE `Langganan`
  ADD CONSTRAINT `jumlah_valid` CHECK (`jumlah` > 0);
 
 ALTER TABLE `Pembelian`
- ADD CONSTRAINT `pembelian_jumlah_valid` CHECK (`jumlah` > 0);
+ ADD CONSTRAINT `pembelian_jumlah_valid` CHECK (`jumlah` >= 0);
 
 ALTER TABLE `KontenTeks`
  ADD CONSTRAINT `jumlah_kata_valid` CHECK (`jumlah_kata` > 0);
@@ -186,7 +186,7 @@ CREATE TRIGGER hitung_total_harga_insert
 BEFORE INSERT ON pembelian 
 FOR EACH ROW 
 BEGIN 
-    DECLARE v_harga DECIMAL(65, 30);
+    DECLARE v_harga DECIMAL(65, 30) DEFAULT 0.0;
     
     SELECT harga INTO v_harga
     FROM merchandise

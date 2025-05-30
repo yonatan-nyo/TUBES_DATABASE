@@ -4,7 +4,7 @@ CREATE TRIGGER hitung_total_harga_insert
 BEFORE INSERT ON pembelian 
 FOR EACH ROW 
 BEGIN 
-    DECLARE v_harga DECIMAL(65, 30);
+    DECLARE v_harga DECIMAL(65, 30) DEFAULT 0.0;
     
     SELECT harga INTO v_harga
     FROM merchandise
