@@ -11,6 +11,7 @@ const relationExtraSqlPath = join(__dirname, "relation_extra.sql");
 const databaseSqlPath = join(__dirname, "database.sql");
 const transitionSqlPath = join(__dirname, "transition.sql");
 const fiturTambahan1SqlPath = join(__dirname, "fitur_tambahan_1.sql");
+const fiturTambahan2SqlPath = join(__dirname, "fitur_tambahan_2.sql");
 const fiturTambahan3SqlPath = join(__dirname, "fitur_tambahan_3.sql");
 const fiturTambahan4SqlPath = join(__dirname, "fitur_tambahan_4.sql");
 
@@ -44,6 +45,7 @@ function combineSqlFiles() {
   const databaseSql = readFileSync(databaseSqlPath, "utf8");
   const transitionSql = readFileSync(transitionSqlPath, "utf8");
   const fiturTambahan1Sql = readFileSync(fiturTambahan1SqlPath, "utf8");
+  const fiturTambahan2Sql = readFileSync(fiturTambahan2SqlPath, "utf8");
   const fiturTambahan3Sql = readFileSync(fiturTambahan3SqlPath, "utf8");
   const fiturTambahan4Sql = readFileSync(fiturTambahan4SqlPath, "utf8");
 
@@ -52,6 +54,7 @@ function combineSqlFiles() {
   combinedSql += `-- Database Constraints\n${databaseSql}\n\n`;
   combinedSql += `-- Transition Constraints\n${transitionSql}\n\n`;
   combinedSql += `-- Fitur Tambahan 1\n${fiturTambahan1Sql}\n\n`;
+  combinedSql += `-- Fitur Tambahan 2\n${fiturTambahan2Sql}\n\n`;
   combinedSql += `-- Fitur Tambahan 3\n${fiturTambahan3Sql}\n\n`;
   combinedSql += `-- Fitur Tambahan 4\n${fiturTambahan4Sql}`;
 
