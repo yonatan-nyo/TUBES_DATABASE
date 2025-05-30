@@ -5,27 +5,27 @@ CREATE TRIGGER `valid_status_transition` BEFORE
 UPDATE ON `OrderSpecialContent` FOR EACH ROW 
 BEGIN 
     IF (
-        -- 'menunggu_persetujuan' hanya boleh ke 'disetujui' atau 'ditolak'
-        OLD.`status` = 'menunggu_persetujuan' AND NEW.`status` NOT IN ('disetujui', 'ditolak')
+        -- 'Menunggu_persetujuan' hanya boleh ke 'Disetujui' atau 'Ditolak'
+        OLD.`status` = 'Menunggu_persetujuan' AND NEW.`status` NOT IN ('Disetujui', 'Ditolak')
     )
     OR (
-        -- 'disetujui' hanya boleh ke 'dalam_pengerjaan'
-        OLD.`status` = 'disetujui' AND NEW.`status` <> 'dalam_pengerjaan'
+        -- 'Disetujui' hanya boleh ke 'Dalam_pengerjaan'
+        OLD.`status` = 'Disetujui' AND NEW.`status` <> 'Dalam_pengerjaan'
     )
     OR (
-        -- 'dalam_pengerjaan' hanya boleh ke 'selesai'
-        OLD.`status` = 'dalam_pengerjaan' AND NEW.`status` <> 'selesai'
+        -- 'Dalam_pengerjaan' hanya boleh ke 'Selesai'
+        OLD.`status` = 'Dalam_pengerjaan' AND NEW.`status` <> 'Selesai'
     )
     OR (
-        -- 'selesai' tidak boleh berubah
-        OLD.`status` = 'selesai' AND NEW.`status` <> 'selesai'
+        -- 'Selesai' tidak boleh berubah
+        OLD.`status` = 'Selesai' AND NEW.`status` <> 'Selesai'
     )
     OR (
-        -- 'ditolak' tidak boleh berubah
-        OLD.`status` = 'ditolak' AND NEW.`status` <> 'ditolak'
+        -- 'Ditolak' tidak boleh berubah
+        OLD.`status` = 'Ditolak' AND NEW.`status` <> 'Ditolak'
     ) THEN 
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Transisi status tidak valid. Ikuti alur status yang benar: menunggu_persetujuan → disetujui/ditolak → dalam_pengerjaan → selesai';
+        SET MESSAGE_TEXT = 'Transisi status tidak valid. Ikuti alur status yang benar: Menunggu_persetujuan → Disetujui/Ditolak → Dalam_pengerjaan → Selesai';
     END IF;
 END;
 
