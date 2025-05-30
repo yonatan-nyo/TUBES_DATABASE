@@ -67,8 +67,7 @@ TUBES_DATABASE/
 │   ├── prisma/
 │   │   ├── constraints/        # Custom constraint definitions
 │   │   ├── migrations/         # Database migration files
-│   │   ├── schema.prisma       # Database schema
-│   │   └── 0_combined.sql      # Combined SQL scripts
+│   │   └── schema.prisma       # Database schema
 │   └── src/                    # Backend source code
 ├── doc/                        # Documentation and images
 └── README.md
@@ -87,24 +86,20 @@ cd prisma/constraints
    - Edit existing constraint files
    - Add new constraint definitions as needed
 
-3. Generate migration scripts:
+3. Generate and apply migration scripts:
 
 ```sh
 npm run migration:create:all
 ```
 
-4. Copy the combined SQL to migration file:
+This command will:
 
-   - Locate the generated migration file at `backend/prisma/migrations/TIMESTAMP_constraint/migration.sql`
-   - Copy contents from `backend/prisma/0_combined.sql` to the migration file
+- Reset the migrations
+- Create a new constraints migration
+- Combine all constraint files and write directly to the migration file
+- Apply the migration to the database
 
-5. Apply migrations to database:
-
-```sh
-npm run db:migrate
-```
-
-6. Verify migration success:
+4. Verify migration success:
    You should see confirmation that constraints are now synchronized with the database.
 
 ![Migration success](doc/migrated.png)
@@ -121,7 +116,6 @@ npm run db:migrate
 | `npm run db:migrate`           | Apply pending migrations to database         |
 | `npm run db:reset`             | Reset database and apply all migrations      |
 | `npm run migration:create`     | Create a new migration file                  |
-| `npm run constrains:combine`   | Combine constraint files into single SQL     |
 | `npm run migration:create:all` | Create migration scripts for all constraints |
 | `npm test`                     | Run tests (not implemented yet)              |
 

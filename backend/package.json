@@ -12,8 +12,7 @@
     "db:migrate": "npx prisma migrate dev",
     "db:reset": "npx prisma migrate reset",
     "migration:create": "prisma migrate dev --create-only",
-    "constrains:combine": "tsx prisma/constraints/combine.ts",
-    "migration:create:all": "rimraf prisma/migrations && npx prisma migrate reset && npm run db:create && npm run constrains:combine && npx prisma migrate dev --create-only --name constraints"
+    "migration:create:all": "rimraf prisma/migrations && npx prisma migrate reset && npm run db:create && npx prisma migrate dev --create-only --name constraints && tsx prisma/constraints/combine.ts && npm run db:migrate"
   },
   "keywords": [],
   "author": "",

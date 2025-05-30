@@ -1,11 +1,35 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+enum JenisKonten {
+  Teks
+  Gambar
+  Audio
+  Video
+}
+
+enum StatusLangganan {
+  Aktif
+  Pending
+  Expired
+}
+
+enum StatusOrder {
+  Selesai
+  Diproses
+  Menunggu
+}
+
+enum JenisAktivitas {
+  Langganan
+  Komentar
+  Beli_Merchandise
 }
 
 model Kreator {
@@ -36,7 +60,7 @@ model Supporter {
 model Konten {
   id_konten         Int           @id @default(autoincrement())
   id_kreator        Int
-  jenis             String
+  jenis             JenisKonten
   judul             String
   deskripsi         String?       @db.Text
   tanggal_publikasi DateTime
@@ -78,7 +102,8 @@ model Langganan {
   nama_membership             String
   id_pendukung                Int
   tanggal_pembayaran_terakhir DateTime
-  jumlah                      Decimal
+  jumlah                      Int
+  // Jumlah bulan langganan
   mode_pembayaran             String
   status                      StatusLangganan
   supporter                   Supporter       @relation(fields: [id_pendukung], references: [id_pendukung], onDelete: Cascade, onUpdate: Cascade)
@@ -175,24 +200,6 @@ model AksesKonten {
   membershipTier  MembershipTier @relation(fields: [id_kreator, nama_membership], references: [id_kreator, nama_membership], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([id_konten, id_kreator, nama_membership])
-}
-
-enum StatusLangganan {
-  Aktif
-  Pending
-  Expired
-}
-
-enum StatusOrder {
-  Selesai
-  Diproses
-  Menunggu
-}
-
-enum JenisAktivitas {
-  Langganan
-  Komentar
-  Beli_Merchandise
 }
 
 model AktivitasPendukung {

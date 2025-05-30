@@ -36,6 +36,7 @@ async function main() {
   for (let i = 0; i < 50; i++) {
     const kreator = getRandomKreator();
     const typeContent = faker.helpers.arrayElement(["Video", "Audio", "Teks", "Gambar"]);
+    const status = faker.helpers.arrayElement(["Selesai", "Diproses", "Menunggu"]);
 
     const orderSpecialContent = await prisma.orderSpecialContent.create({
       data: {
@@ -47,8 +48,8 @@ async function main() {
         detail_kustom: faker.lorem.sentence(),
         tanggal_batas_revisi: faker.date.future(),
         estimasi_pengerjaan: faker.number.int({ min: 1, max: 10 }),
-        status: "Dalam Proses",
-        tanggal_penyelesaian: null,
+        status,
+        tanggal_penyelesaian: status === "Selesai" ? faker.date.recent() : null,
         feedback: "",
       },
     });
@@ -161,9 +162,9 @@ async function main() {
           nama_membership: tier.nama_membership,
           id_pendukung: supporter.id_pendukung,
           tanggal_pembayaran_terakhir: faker.date.recent(),
-          jumlah: tier.harga_bulanan,
+          jumlah: faker.number.int({ min: 1, max: 10 }),
           mode_pembayaran: faker.helpers.arrayElement(["Transfer", "E-Wallet"]),
-          status: faker.helpers.arrayElement(["Aktif", "Nonaktif"]),
+          status: faker.helpers.arrayElement(["Aktif", "Pending", "Expired"]),
         },
       });
     }
@@ -235,20 +236,74 @@ async function main() {
 
   for (let i = 0; i < 40; i++) {
     const konten = kontenList[Math.floor(Math.random() * kontenList.length)];
-    const tier = membershipList[Math.floor(Math.random() * membershipList.length)];
 
     try {
-      await prisma.aksesKonten.create({
-        data: {
-          id_konten: konten.id_konten,
-          id_kreator: tier.id_kreator,
-          nama_membership: tier.nama_membership,
+      // Find all existing active subscriptions
+      const activeLangganans = await prisma.langganan.findMany({
+        where: {
+          status: "Aktif",
+        },
+        include: {
+          membershipTier: true,
         },
       });
+
+      if (activeLangganans.length > 0) {
+        // Use a random active subscription
+        const randomActiveLangganan = activeLangganans[Math.floor(Math.random() * activeLangganans.length)];
+
+        await prisma.aksesKonten.create({
+          data: {
+            id_konten: konten.id_konten,
+            id_kreator: randomActiveLangganan.id_kreator,
+            nama_membership: randomActiveLangganan.nama_membership,
+          },
+        });
+      } else {
+        // Create a new active subscription and then create access
+        const supporter = getRandomSupporter();
+        const tier = membershipList[Math.floor(Math.random() * membershipList.length)];
+
+        // Check if this combination already exists
+        const existingLangganan = await prisma.langganan.findUnique({
+          where: {
+            id_kreator_nama_membership_id_pendukung: {
+              id_kreator: tier.id_kreator,
+              nama_membership: tier.nama_membership,
+              id_pendukung: supporter.id_pendukung,
+            },
+          },
+        });
+
+        if (!existingLangganan) {
+          // Create active subscription
+          await prisma.langganan.create({
+            data: {
+              id_kreator: tier.id_kreator,
+              nama_membership: tier.nama_membership,
+              id_pendukung: supporter.id_pendukung,
+              tanggal_pembayaran_terakhir: faker.date.recent(),
+              jumlah: faker.number.int({ min: 1, max: 10 }),
+              mode_pembayaran: faker.helpers.arrayElement(["Transfer", "E-Wallet"]),
+              status: "Aktif",
+            },
+          });
+
+          // Now create the access
+          await prisma.aksesKonten.create({
+            data: {
+              id_konten: konten.id_konten,
+              id_kreator: tier.id_kreator,
+              nama_membership: tier.nama_membership,
+            },
+          });
+        }
+      }
     } catch (error) {
       // @ts-ignore
       if (!error.message.includes("Unique constraint")) {
-        throw error;
+        // @ts-ignore
+        console.warn(`⚠️ [SEED] Failed to create AksesKonten: ${error.message}`);
       }
     }
   }

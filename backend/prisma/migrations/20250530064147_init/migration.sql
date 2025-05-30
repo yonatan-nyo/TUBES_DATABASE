@@ -27,7 +27,7 @@ CREATE TABLE `Supporter` (
 CREATE TABLE `Konten` (
     `id_konten` INTEGER NOT NULL AUTO_INCREMENT,
     `id_kreator` INTEGER NOT NULL,
-    `jenis` VARCHAR(191) NOT NULL,
+    `jenis` ENUM('Teks', 'Gambar', 'Audio', 'Video') NOT NULL,
     `judul` VARCHAR(191) NOT NULL,
     `deskripsi` TEXT NULL,
     `tanggal_publikasi` DATETIME(3) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE `Langganan` (
     `nama_membership` VARCHAR(191) NOT NULL,
     `id_pendukung` INTEGER NOT NULL,
     `tanggal_pembayaran_terakhir` DATETIME(3) NOT NULL,
-    `jumlah` DECIMAL(65, 30) NOT NULL,
+    `jumlah` INTEGER NOT NULL,
     `mode_pembayaran` VARCHAR(191) NOT NULL,
     `status` ENUM('Aktif', 'Pending', 'Expired') NOT NULL,
 
