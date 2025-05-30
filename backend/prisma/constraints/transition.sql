@@ -29,28 +29,24 @@ BEGIN
     END IF;
 END;
 
--- Trigger untuk validasi jumlah tier maksimal saat UPDATE
-CREATE TRIGGER check_max_tier_per_kreator_update
-BEFORE UPDATE ON MembershipTier
+CREATE TRIGGER check_status_langganan_transition
+BEFORE UPDATE ON Langganan
 FOR EACH ROW
 BEGIN
-    DECLARE tier_count INT;
-
-    -- Jika id_kreator tidak berubah, jumlah tetap dihitung berdasarkan id_kreator yang sama
-    -- Jika id_kreator berubah, validasi pada NEW.id_kreator
-    IF NEW.id_kreator <> OLD.id_kreator THEN
-        SELECT COUNT(*) INTO tier_count
-        FROM MembershipTier
-        WHERE id_kreator = NEW.id_kreator;
-    ELSE
-        SELECT COUNT(*) INTO tier_count
-        FROM MembershipTier
-        WHERE id_kreator = NEW.id_kreator AND nama_membership <> OLD.nama_membership;
-    END IF;
-
-    IF tier_count >= 5 THEN
+    IF (
+        -- Expired tidak boleh berubah
+        OLD.status = 'Expired' AND NEW.status <> 'Expired'
+    )
+    OR (
+        -- Tidak boleh dari Aktif kembali ke Pending
+        OLD.status = 'Aktif' AND NEW.status = 'Pending'
+    )
+    OR (
+        -- Tidak boleh dari Pending langsung ke Aktif jika tidak sah
+        OLD.status = 'Pending' AND NEW.status NOT IN ('Aktif', 'Expired')
+    ) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Maksimal tier untuk satu kreator adalah 5.';
+        SET MESSAGE_TEXT = 'Transisi status langganan tidak valid: ikuti urutan Pending → Aktif → Expired';
     END IF;
 END;
 
