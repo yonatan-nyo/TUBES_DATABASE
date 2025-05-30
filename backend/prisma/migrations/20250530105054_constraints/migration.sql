@@ -55,30 +55,17 @@ ALTER TABLE `MembershipTier`
 ADD CONSTRAINT `harga_bulanan_valid`
 CHECK (`harga_bulanan` > 0.0 AND `harga_bulanan` <= 1000000.0);
 
+-- Relation Extra Sql
+ALTER TABLE `OrderSpecialContent`
+ADD CONSTRAINT `chk_status_selesai_tanggal`
+CHECK (
+  NOT (`status` = 'Selesai' AND `tanggal_penyelesaian` IS NULL)
+);
+
+
 -- Database Constraints
 -- prettier-ignore-start
 -- sql-formatter-disable
-
--- 1. Order dengan status 'Selesai' harus memiliki tanggal penyelesaian
-CREATE TRIGGER `check_order_selesai` 
-BEFORE INSERT ON `OrderSpecialContent` 
-FOR EACH ROW 
-BEGIN 
-    IF NEW.`status` = 'Selesai' AND NEW.`tanggal_penyelesaian` IS NULL THEN 
-        SIGNAL SQLSTATE '45000' 
-        SET MESSAGE_TEXT = 'Order dengan status Selesai harus memiliki tanggal_penyelesaian';
-    END IF;
-END;
-
-CREATE TRIGGER `check_order_selesai_update` 
-BEFORE UPDATE ON `OrderSpecialContent` 
-FOR EACH ROW 
-BEGIN 
-    IF NEW.`status` = 'Selesai' AND NEW.`tanggal_penyelesaian` IS NULL THEN 
-        SIGNAL SQLSTATE '45000' 
-        SET MESSAGE_TEXT = 'Order dengan status Selesai harus memiliki tanggal_penyelesaian';
-    END IF;
-END;
 
 -- Check if membership tier exists and has at least one active subscription
 CREATE TRIGGER `check_akses_konten_valid` 
