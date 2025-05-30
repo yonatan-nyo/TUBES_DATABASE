@@ -158,7 +158,6 @@ BEGIN
     END IF;
 END;
 
-
 -- 2. tanggal pembeliannya merhcandise hasil konten harus > release date konten
 CREATE TRIGGER check_pembelian_setelah_publikasi
 BEFORE INSERT ON Pembelian
@@ -211,7 +210,6 @@ BEGIN
         SET MESSAGE_TEXT = 'Tanggal publikasi konten tidak boleh setelah ada pembelian merchandise.';
     END IF;
 END;
-
 
 -- sql-formatter-enable
 -- prettier-ignore-end
