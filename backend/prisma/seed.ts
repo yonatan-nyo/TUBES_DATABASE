@@ -30,13 +30,24 @@ async function main() {
   const kreatorList = await prisma.kreator.findMany();
   const supporterList = await prisma.supporter.findMany();
 
-  const getRandomKreator = () => kreatorList[Math.floor(Math.random() * kreatorList.length)];
-  const getRandomSupporter = () => supporterList[Math.floor(Math.random() * supporterList.length)];
+  const getRandomKreator = () =>
+    kreatorList[Math.floor(Math.random() * kreatorList.length)];
+  const getRandomSupporter = () =>
+    supporterList[Math.floor(Math.random() * supporterList.length)];
 
   for (let i = 0; i < 50; i++) {
     const kreator = getRandomKreator();
-    const typeContent = faker.helpers.arrayElement(["Video", "Audio", "Teks", "Gambar"]);
-    const status = faker.helpers.arrayElement(["Selesai", "Diproses", "Menunggu"]);
+    const typeContent = faker.helpers.arrayElement([
+      "Video",
+      "Audio",
+      "Teks",
+      "Gambar",
+    ]);
+    const status = faker.helpers.arrayElement([
+      "Selesai",
+      "Diproses",
+      "Menunggu",
+    ]);
 
     const orderSpecialContent = await prisma.orderSpecialContent.create({
       data: {
@@ -102,7 +113,11 @@ async function main() {
           id_konten: createdKonten.id_konten,
           audioSource: faker.internet.url(),
           durasi: faker.number.int({ min: 30, max: 600 }), // seconds
-          kualitas: faker.helpers.arrayElement(["128kbps", "256kbps", "320kbps"]),
+          kualitas: faker.helpers.arrayElement([
+            "128kbps",
+            "256kbps",
+            "320kbps",
+          ]),
         },
       });
     } else if (typeContent === "Video") {
@@ -115,13 +130,42 @@ async function main() {
         },
       });
     }
+  }
 
+  const kreatorIds = (
+    await prisma.kreator.findMany({
+      select: { id_kreator: true },
+    })
+  ).map((k) => k.id_kreator);
+
+  // Salin array kreator
+  const kreatorPool = [...kreatorIds];
+
+  while (kreatorPool.length > 0) {
+    // Pilih salah satu kreator secara acak
+    const randomIndex = Math.floor(Math.random() * kreatorPool.length);
+    const selectedKreatorId = kreatorPool[randomIndex];
+
+    // Hitung jumlah tier yang sudah dibuat
+    const tierCount = await prisma.membershipTier.count({
+      where: { id_kreator: selectedKreatorId },
+    });
+
+    if (tierCount >= 5) {
+      // Jika sudah penuh, hapus dari pool
+      kreatorPool.splice(randomIndex, 1);
+      continue;
+    }
+
+    // Tambahkan satu tier
     await prisma.membershipTier.create({
       data: {
-        id_kreator: kreator.id_kreator,
+        id_kreator: selectedKreatorId,
         nama_membership: faker.word.adjective() + "-" + faker.word.noun(),
         deskripsi: faker.lorem.sentence(),
-        harga_bulanan: parseFloat(faker.commerce.price({ min: 10000, max: 1000000 })),
+        harga_bulanan: parseFloat(
+          faker.commerce.price({ min: 10000, max: 1000000 })
+        ),
         daftar_manfaat: faker.lorem.sentences(2),
       },
     });
@@ -143,7 +187,8 @@ async function main() {
       },
     });
 
-    const tier = membershipList[Math.floor(Math.random() * membershipList.length)];
+    const tier =
+      membershipList[Math.floor(Math.random() * membershipList.length)];
 
     const existingLangganan = await prisma.langganan.findUnique({
       where: {
@@ -173,7 +218,8 @@ async function main() {
   const kontenIds = kontenList.map((konten) => konten.id_konten);
 
   for (let i = 0; i < 30; i++) {
-    const randomKontenId = kontenIds[Math.floor(Math.random() * kontenIds.length)];
+    const randomKontenId =
+      kontenIds[Math.floor(Math.random() * kontenIds.length)];
     await prisma.merchandise.create({
       data: {
         nama: faker.commerce.productName(),
@@ -194,7 +240,8 @@ async function main() {
   const maxAttempts = 1000;
   while (successfulCreations < 50 && attempts < maxAttempts) {
     attempts++;
-    const merchandise = merchandiseList[Math.floor(Math.random() * merchandiseList.length)];
+    const merchandise =
+      merchandiseList[Math.floor(Math.random() * merchandiseList.length)];
     const supporter = getRandomSupporter();
 
     // Create a unique key for this combination
@@ -217,7 +264,12 @@ async function main() {
           id_pendukung: supporter.id_pendukung,
           jumlah: quantity,
           tanggal_pembelian: faker.date.recent(),
-          metode_pembayaran: faker.helpers.arrayElement(["Transfer Bank", "E-Wallet", "Kartu Kredit", "QRIS"]),
+          metode_pembayaran: faker.helpers.arrayElement([
+            "Transfer Bank",
+            "E-Wallet",
+            "Kartu Kredit",
+            "QRIS",
+          ]),
           total_harga: totalPrice,
         },
       });
@@ -232,7 +284,9 @@ async function main() {
     }
   }
 
-  console.log(`✅ [SEED] Created ${successfulCreations} pembelian records after ${attempts} attempts`);
+  console.log(
+    `✅ [SEED] Created ${successfulCreations} pembelian records after ${attempts} attempts`
+  );
 
   for (let i = 0; i < 40; i++) {
     const konten = kontenList[Math.floor(Math.random() * kontenList.length)];
@@ -250,7 +304,8 @@ async function main() {
 
       if (activeLangganans.length > 0) {
         // Use a random active subscription
-        const randomActiveLangganan = activeLangganans[Math.floor(Math.random() * activeLangganans.length)];
+        const randomActiveLangganan =
+          activeLangganans[Math.floor(Math.random() * activeLangganans.length)];
 
         await prisma.aksesKonten.create({
           data: {
@@ -262,7 +317,8 @@ async function main() {
       } else {
         // Create a new active subscription and then create access
         const supporter = getRandomSupporter();
-        const tier = membershipList[Math.floor(Math.random() * membershipList.length)];
+        const tier =
+          membershipList[Math.floor(Math.random() * membershipList.length)];
 
         // Check if this combination already exists
         const existingLangganan = await prisma.langganan.findUnique({
@@ -284,7 +340,10 @@ async function main() {
               id_pendukung: supporter.id_pendukung,
               tanggal_pembayaran_terakhir: faker.date.recent(),
               jumlah: faker.number.int({ min: 1, max: 10 }),
-              mode_pembayaran: faker.helpers.arrayElement(["Transfer", "E-Wallet"]),
+              mode_pembayaran: faker.helpers.arrayElement([
+                "Transfer",
+                "E-Wallet",
+              ]),
               status: "Aktif",
             },
           });
@@ -302,8 +361,10 @@ async function main() {
     } catch (error) {
       // @ts-ignore
       if (!error.message.includes("Unique constraint")) {
-        // @ts-ignore
-        console.warn(`⚠️ [SEED] Failed to create AksesKonten: ${error.message}`);
+        console.warn(
+          // @ts-ignore
+          `⚠️ [SEED] Failed to create AksesKonten: ${error.message}`
+        );
       }
     }
   }

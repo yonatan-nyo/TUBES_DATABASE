@@ -4,13 +4,13 @@ Karena MariaDB tidak mendukung create TYPE, kita akan menggunakan
 CHECK CONSTRAINT untuk memastikan nilai kolom sesuai dengan tipe yang diinginkan.
  */
 ALTER TABLE `Pembelian`
- ADD CONSTRAINT `pembelian_total_harga_valid` CHECK (`total_harga` > 0.0);
+ ADD CONSTRAINT `pembelian_total_harga_valid` CHECK (`total_harga` >= 0.0);
 
 ALTER TABLE `Langganan`
  ADD CONSTRAINT `jumlah_valid` CHECK (`jumlah` > 0);
 
 ALTER TABLE `Pembelian`
- ADD CONSTRAINT `pembelian_jumlah_valid` CHECK (`jumlah` > 0);
+ ADD CONSTRAINT `pembelian_jumlah_valid` CHECK (`jumlah` >= 0);
 
 ALTER TABLE `KontenTeks`
  ADD CONSTRAINT `jumlah_kata_valid` CHECK (`jumlah_kata` > 0);
@@ -98,28 +98,101 @@ BEGIN
         SET MESSAGE_TEXT = 'Tidak ada langganan aktif untuk membership tier ini';
     END IF;
 END;
+
+-- Trigger untuk validasi jumlah tier maksimal saat INSERT
+CREATE TRIGGER check_max_tier_per_kreator_insert
+BEFORE INSERT ON MembershipTier
+FOR EACH ROW
+BEGIN
+    DECLARE tier_count INT;
+
+    SELECT COUNT(*) INTO tier_count
+    FROM MembershipTier
+    WHERE id_kreator = NEW.id_kreator;
+
+    IF tier_count >= 5 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Maksimal tier untuk satu kreator adalah 5.';
+    END IF;
+END;
+
+-- Trigger untuk validasi jumlah tier maksimal saat UPDATE
+CREATE TRIGGER check_max_tier_per_kreator_update
+BEFORE UPDATE ON MembershipTier
+FOR EACH ROW
+BEGIN
+    DECLARE tier_count INT;
+
+    -- Jika id_kreator tidak berubah, jumlah tetap dihitung berdasarkan id_kreator yang sama
+    -- Jika id_kreator berubah, validasi pada NEW.id_kreator
+    IF NEW.id_kreator <> OLD.id_kreator THEN
+        SELECT COUNT(*) INTO tier_count
+        FROM MembershipTier
+        WHERE id_kreator = NEW.id_kreator;
+    ELSE
+        SELECT COUNT(*) INTO tier_count
+        FROM MembershipTier
+        WHERE id_kreator = NEW.id_kreator AND nama_membership <> OLD.nama_membership;
+    END IF;
+
+    IF tier_count >= 5 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Maksimal tier untuk satu kreator adalah 5.';
+    END IF;
+END;
+
 -- sql-formatter-enable
 -- prettier-ignore-end
 
 -- Transition Constraints
 -- prettier-ignore-start
 -- sql-formatter-disable
--- 1. Transisi status pesanan khusus (OrderSpecialContent) tidak boleh mundur
+-- 1. Transisi status pesanan khusus (OrderSpecialContent) harus mengikuti alur yang sah
 CREATE TRIGGER `valid_status_transition` BEFORE
 UPDATE ON `OrderSpecialContent` FOR EACH ROW 
 BEGIN 
     IF (
-        OLD.`status` = 'Selesai'
-        AND NEW.`status` IN ('Diproses', 'Menunggu')
+        -- 'Menunggu_persetujuan' hanya boleh ke 'Disetujui' atau 'Ditolak'
+        OLD.`status` = 'Menunggu_persetujuan' AND NEW.`status` NOT IN ('Disetujui', 'Ditolak')
     )
     OR (
-        OLD.`status` = 'Diproses'
-        AND NEW.`status` = 'Menunggu'
+        -- 'Disetujui' hanya boleh ke 'Dalam_pengerjaan'
+        OLD.`status` = 'Disetujui' AND NEW.`status` <> 'Dalam_pengerjaan'
+    )
+    OR (
+        -- 'Dalam_pengerjaan' hanya boleh ke 'Selesai'
+        OLD.`status` = 'Dalam_pengerjaan' AND NEW.`status` <> 'Selesai'
+    )
+    OR (
+        -- 'Selesai' tidak boleh berubah
+        OLD.`status` = 'Selesai' AND NEW.`status` <> 'Selesai'
+    )
+    OR (
+        -- 'Ditolak' tidak boleh berubah
+        OLD.`status` = 'Ditolak' AND NEW.`status` <> 'Ditolak'
     ) THEN 
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Transisi status tidak valid. Urutan harus: Menunggu → Diproses → Selesai';
+        SET MESSAGE_TEXT = 'Transisi status tidak valid. Ikuti alur status yang benar: Menunggu_persetujuan → Disetujui/Ditolak → Dalam_pengerjaan → Selesai';
     END IF;
 END;
+
+CREATE TRIGGER check_status_langganan_transition
+BEFORE UPDATE ON Langganan
+FOR EACH ROW
+BEGIN
+    IF (
+        -- Tidak boleh dari Aktif ke Pending
+        OLD.status = 'Aktif' AND NEW.status = 'Pending'
+    )
+    OR (
+        -- Tidak boleh dari Expired langsung ke Aktif
+        OLD.status = 'Expired' AND NEW.status = 'Aktif'
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Transisi status tidak valid. Gunakan urutan: Pending → Aktif → Expired → Pending (tidak langsung ke Aktif).';
+    END IF;
+END;
+
 -- sql-formatter-enable
 -- prettier-ignore-end
 
@@ -130,7 +203,7 @@ CREATE TRIGGER hitung_total_harga_insert
 BEFORE INSERT ON pembelian 
 FOR EACH ROW 
 BEGIN 
-    DECLARE v_harga DECIMAL(65, 30);
+    DECLARE v_harga DECIMAL(65, 30) DEFAULT 0.0;
     
     SELECT harga INTO v_harga
     FROM merchandise
