@@ -34,19 +34,15 @@ BEFORE UPDATE ON Langganan
 FOR EACH ROW
 BEGIN
     IF (
-        -- Expired tidak boleh berubah
-        OLD.status = 'Expired' AND NEW.status <> 'Expired'
-    )
-    OR (
-        -- Tidak boleh dari Aktif kembali ke Pending
+        -- Tidak boleh dari Aktif ke Pending
         OLD.status = 'Aktif' AND NEW.status = 'Pending'
     )
     OR (
-        -- Tidak boleh dari Pending langsung ke Aktif jika tidak sah
-        OLD.status = 'Pending' AND NEW.status NOT IN ('Aktif', 'Expired')
+        -- Tidak boleh dari Expired langsung ke Aktif
+        OLD.status = 'Expired' AND NEW.status = 'Aktif'
     ) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Transisi status langganan tidak valid: ikuti urutan Pending → Aktif → Expired';
+        SET MESSAGE_TEXT = 'Transisi status tidak valid. Gunakan urutan: Pending → Aktif → Expired → Pending (tidak langsung ke Aktif).';
     END IF;
 END;
 
