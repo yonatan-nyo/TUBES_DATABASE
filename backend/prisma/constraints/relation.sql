@@ -4,13 +4,54 @@ unique constraints provided at schema.prisma thus doesnt need to copy this to mi
 [AUTOMATICALLY GENERATED]
 !!!
  */
---  1. Atribut email harus unik
-ALTER TABLE `Supporter` ADD CONSTRAINT `supporter_email_unique` UNIQUE (`email`);
+-- on create
+CREATE TABLE `Kreator` (
+    -- other fields
+    `email` VARCHAR(191) NOT NULL,
+    -- other fields
 
-ALTER TABLE `Kreator` ADD CONSTRAINT `kreator_email_unique` UNIQUE (`email`);
+    UNIQUE INDEX `Kreator_email_key`(`email`),
+    -- other constraints
+);
+-- alter version assuming email exists in Kreator table
+ALTER TABLE `Kreator` ADD CONSTRAINT `Kreator_email_key` UNIQUE (`email`);
 
---  2. Setiap pendukung hanya boleh memiliki satu order dengan judul tertentu (judul order unik terhadap dirinya sendiri)
-ALTER TABLE `OrderSpecialContent` ADD CONSTRAINT `judul_order_unik_per_pendukung` UNIQUE (`id_pendukung`, `judul`);
+-- on create
+CREATE TABLE `Supporter` (
+    -- other fields
+    `email` VARCHAR(191) NOT NULL,
+    -- other fields
+
+    UNIQUE INDEX `Supporter_email_key`(`email`),
+    -- other constraints
+);
+-- alter version assuming email exists in Supporter table
+ALTER TABLE `Supporter` ADD CONSTRAINT `Supporter_email_key` UNIQUE (`email`);
+
+-- on create
+CREATE TABLE `OrderSpecialContent` (
+    -- other fields
+    `id_pendukung` INTEGER NOT NULL,
+    `judul` VARCHAR(191) NOT NULL,
+    -- other fields
+
+    UNIQUE INDEX `OrderSpecialContent_id_pendukung_judul_key`(`id_pendukung`, `judul`),
+    -- other constraints
+);
+-- alter version assuming id_pendukung and judul exist in OrderSpecialContent table
+ALTER TABLE `OrderSpecialContent` ADD CONSTRAINT `OrderSpecialContent_id_pendukung_judul_key` UNIQUE (`id_pendukung`, `judul`);
+
+-- on create
+CREATE TABLE `KontenGambar` (
+    -- other fields
+    `id_order` INTEGER NULL,
+    -- other fields
+
+    UNIQUE INDEX `KontenGambar_id_order_key`(`id_order`),
+    -- other constraints
+);
+-- alter version assuming id_order exists in KontenGambar table
+ALTER TABLE `KontenGambar` ADD CONSTRAINT `KontenGambar_id_order_key` UNIQUE (`id_order`);
 
 /* 
 !!! 
