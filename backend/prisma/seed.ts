@@ -121,7 +121,7 @@ async function main() {
         id_kreator: kreator.id_kreator,
         nama_membership: faker.word.adjective() + "-" + faker.word.noun(),
         deskripsi: faker.lorem.sentence(),
-        harga_bulanan: parseFloat(faker.commerce.price()),
+        harga_bulanan: parseFloat(faker.commerce.price({ min: 10000, max: 1000000 })),
         daftar_manfaat: faker.lorem.sentences(2),
       },
     });
@@ -178,7 +178,7 @@ async function main() {
       data: {
         nama: faker.commerce.productName(),
         id_konten: randomKontenId,
-        harga: parseFloat(faker.commerce.price({ min: 50000, max: 500000 })),
+        harga: parseFloat(faker.commerce.price({ min: 10000, max: 1500000 })),
         stok: faker.number.int({ min: 10, max: 100 }),
         deskripsi: faker.commerce.productDescription(),
       },
