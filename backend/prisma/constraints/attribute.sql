@@ -27,12 +27,12 @@ MODIFY COLUMN `status` ENUM('Aktif', 'Pending', 'Expired') NOT NULL;
 --  on create
 CREATE TABLE `OrderSpecialContent` (
     -- other attributes
-    `status` ENUM('Menunggu_persetujuan', 'Disetujui', 'Ditolak', 'Dalam_pengerjaan', 'Selesai') NOT NULL,
+    `status` ENUM('Menunggu_persetujuan', 'Disetujui', 'Dalam_pengerjaan', 'Selesai', 'Ditolak') NOT NULL,
     -- other attributes & constraints
 );
 -- alter version assuming status exists in OrderSpecialContent table
 ALTER TABLE `OrderSpecialContent`
-MODIFY COLUMN `status` ENUM('Menunggu_persetujuan', 'Disetujui', 'Ditolak', 'Dalam_pengerjaan', 'Selesai') NOT NULL;
+MODIFY COLUMN `status` ENUM('Menunggu_persetujuan', 'Disetujui', 'Dalam_pengerjaan', 'Selesai', 'Ditolak') NOT NULL;
 
 --  on create
 CREATE TABLE `AktivitasPendukung` (

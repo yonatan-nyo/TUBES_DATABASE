@@ -21,9 +21,11 @@ enum StatusLangganan {
 }
 
 enum StatusOrder {
+  Menunggu_persetujuan
+  Disetujui
+  Dalam_pengerjaan
   Selesai
-  Diproses
-  Menunggu
+  Ditolak
 }
 
 enum JenisAktivitas {

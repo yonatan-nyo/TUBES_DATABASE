@@ -81,7 +81,7 @@ CREATE TABLE `OrderSpecialContent` (
     `detail_kustom` TEXT NULL,
     `tanggal_batas_revisi` DATETIME(3) NOT NULL,
     `estimasi_pengerjaan` INTEGER NOT NULL,
-    `status` ENUM('Selesai', 'Diproses', 'Menunggu') NOT NULL,
+    `status` ENUM('Menunggu_persetujuan', 'Disetujui', 'Dalam_pengerjaan', 'Selesai', 'Ditolak') NOT NULL,
     `tanggal_penyelesaian` DATETIME(3) NULL,
     `feedback` TEXT NULL,
 
