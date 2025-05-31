@@ -2,6 +2,20 @@
 
 A database management system project for ITB Computer Science - Database course (Semester 4).
 
+## ⚠️ Important Notice
+
+**This repository is created for educational purposes to demonstrate database constraint implementation.**
+
+The migration approach used here (resetting migrations and recreating the database) is **NOT recommended for real-world applications**. In production environments, you should:
+
+- Never drop or reset the database
+- Always create incremental migrations to alter existing data
+- Preserve existing data during schema changes
+- Use proper migration rollback strategies
+- Test migrations thoroughly before applying to production
+
+This project focuses on learning how to create and manage database constraints, hence the simplified migration workflow.
+
 ## Features
 
 - Database schema management with Prisma ORM
@@ -13,9 +27,9 @@ A database management system project for ITB Computer Science - Database course 
 
 Before you begin, ensure you have the following installed:
 
-- [Node.js](https://nodejs.org/) (v16 or higher)
+- [Node.js](https://nodejs.org/) (preffered v22.x)
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- Database system (PostgreSQL, MySQL, or SQLite)
+- Database system (MariaDB)
 - Git
 
 ## Installation
@@ -75,11 +89,7 @@ TUBES_DATABASE/
 
 ## How to Add Constraints
 
-1. Navigate to constraint definitions:
-
-```sh
-cd prisma/constraints
-```
+1. Navigate to constraint definitions which is located in `backend/prisma/constraints` directory:
 
 2. Update the constraint files based on your requirements:
 
@@ -94,7 +104,8 @@ npm run migration:create:all
 
 This command will:
 
-- Reset the migrations
+- Reset the database
+- Create a new migration file for initialization of the schema
 - Create a new constraints migration
 - Combine all constraint files and write directly to the migration file
 - Apply the migration to the database
